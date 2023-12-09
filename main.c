@@ -29,6 +29,61 @@ static Emulator* create_emu(size_t size, uint32_t eip, uint32_t esp)
     return emu;
 }
 
+static void destroy_emu(Emulator* emu) {
+    free(emu->memory);
+    free(emu);
+}
+
+uint32_t get_code8(Emulator* emu, int index)
+{
+    return emu->memory[emu->eip + index];
+}
+
+int32_t get_sign_code8(Emulator* emu, int index)
+{
+    return (int8_t)emu->memory[emu->eip + index];
+}
+
+uint32_t get_code_32(Emulator* emu, int index)
+{
+    int i;
+    uint32_t ret = 0;
+
+    for (i = 0; i < 4; i++) {
+        ret |= get_code8(emu, index + i) << (i * 8);
+    }
+
+    return ret;
+}
+
+void mov_r32_imm32(Emulator* emu)
+{
+    uint8_t reg = get_code8(emu, 0) - 0xB8;
+    uint32_t value = get_code_32(emu, 1);
+    emu->registers[reg] = value;
+    emu->eip += 5;
+}
+
+void short_jump(Emulator* emu)
+{
+    int8_t diff = get_sign_code8(emu, 1);
+    emu->eip += (diff + 2);
+}
+
+typedef void instruction_func_t(Emulator*);
+instruction_func_t* instructions[256];
+void init_instructions(void)
+{
+    int i;
+    memset(instructions, 0, sizeof(instructions));
+    for (i = 0; i < 8; i++) {
+        instructions[0xB8 + i] = mov_r32_imm32;
+    }
+
+    instructions[0xEB] = short_jump;
+}
+
+
 int main(int argc, char* argv[]) {
     FILE* binary;
     Emulator* emu;
@@ -44,6 +99,8 @@ int main(int argc, char* argv[]) {
     if (binary == NULL) {
         printf("%s cannot open file\n", argv[1]);
     }
+
+    fread(emu->memory, 1, 0x200, binary);
 
     return 0;
 }
