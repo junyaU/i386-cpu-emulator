@@ -34,6 +34,17 @@ static void destroy_emu(Emulator* emu) {
     free(emu);
 }
 
+static void dump_registers(Emulator* emu)
+{
+    int i;
+
+    for (i = 0; i < REGISTERS_COUNT; i++) {
+        printf("%s = %08x\n", registers_names[i], emu->registers[i]);
+    }
+
+    printf("EIP = %08x\n", emu->eip);
+}
+
 uint32_t get_code8(Emulator* emu, int index)
 {
     return emu->memory[emu->eip + index];
@@ -83,7 +94,6 @@ void init_instructions(void)
     instructions[0xEB] = short_jump;
 }
 
-
 int main(int argc, char* argv[]) {
     FILE* binary;
     Emulator* emu;
@@ -101,6 +111,27 @@ int main(int argc, char* argv[]) {
     }
 
     fread(emu->memory, 1, 0x200, binary);
+
+    init_instructions();
+
+    while(emu->eip < MEMORY_SIZE) {
+        uint8_t code = get_code8(emu, 0);
+
+        if (instructions[code] == NULL) {
+            printf("\n\nNot Implemented: %x\n", code);
+            break;
+        }
+
+        instructions[code](emu);
+
+        if (emu->eip == 0x00) {
+            printf("\n\nend of program.\n\n");
+            break;
+        }
+    }
+
+    dump_registers(emu);
+    destroy_emu(emu);
 
     return 0;
 }
