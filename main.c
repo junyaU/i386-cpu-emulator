@@ -11,6 +11,19 @@
 
 char *registers_names[] = { "EAX", "ECX", "EDX", "EBX", "ESP", "EBP", "ESI", "EDI" };
 
+static void read_binary(Emulator* emu, const char* filename)
+{
+    FILE* binary;
+
+    binary = fopen(filename, "rb");
+    if (binary == NULL) {
+        printf("%s cannot open file\n", filename);
+    }
+
+    fread(emu->memory + 0x7c00, 1, 0x200, binary);
+    fclose(binary);
+}
+
 static Emulator* create_emu(size_t size, uint32_t eip, uint32_t esp)
 {
     Emulator* emu = malloc(sizeof(Emulator));
@@ -40,8 +53,8 @@ static void dump_registers(Emulator* emu)
     printf("EIP = %08x\n", emu->eip);
 }
 
-int main(int argc, char* argv[]) {
-    FILE* binary;
+int main(int argc, char* argv[])
+{
     Emulator* emu;
 
     if (argc != 2) {
@@ -49,17 +62,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    init_instructions();
+
     emu = create_emu(MEMORY_SIZE, 0x7c00, 0x7c00);
 
-    binary = fopen(argv[1], "rb");
-    if (binary == NULL) {
-        printf("%s cannot open file\n", argv[1]);
-    }
-
-    fread(emu->memory + 0x7c00, 1, 0x200, binary);
-    fclose(binary);
-
-    init_instructions();
+    read_binary(emu, argv[1]);
 
     while(emu->eip < MEMORY_SIZE) {
         uint8_t code = get_code8(emu, 0);
