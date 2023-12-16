@@ -86,3 +86,17 @@ uint32_t get_memory32(Emulator* emu, uint32_t addr)
 
     return ret;
 }
+
+void push32(Emulator* emu, uint32_t value)
+{
+    uint32_t addr = get_register8(emu, ESP) - 4;
+    set_register32(emu, ESP, addr);
+    set_memory32(emu, addr, value);
+}
+
+uint32_t pop32(Emulator* emu)
+{
+    uint32_t addr = get_register8(emu, ESP);
+    set_register32(emu, ESP, addr + 4);
+    return get_memory32(emu, addr);
+}

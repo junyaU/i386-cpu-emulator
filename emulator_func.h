@@ -29,4 +29,8 @@ void set_memory8(Emulator* emu, uint32_t addr, uint32_t value);
 
 void set_memory32(Emulator* emu, uint32_t addr, uint32_t value);
 
+void push32(Emulator* emu, uint32_t value);
+
+uint32_t pop32(Emulator* emu);
+
 #endif
