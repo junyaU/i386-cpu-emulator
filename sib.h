@@ -5,6 +5,13 @@
 
 #include "emulator.h"
 
+enum ScaleFactor {
+    SCALE_1 = 0,
+    SCALE_2 = 1,
+    SCALE_4 = 2,
+    SCALE_8 = 3,
+};
+
 typedef struct {
     uint8_t scale;
     uint8_t index;
@@ -12,5 +19,7 @@ typedef struct {
 } SIB;
 
 void parse_sib(Emulator* emu, SIB* sib);
+
+uint32_t calc_sib_addr(Emulator* emu, SIB* sib);
 
 #endif

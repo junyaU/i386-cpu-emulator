@@ -6,6 +6,7 @@
 
 #include "modrm.h"
 #include "emulator_func.h"
+#include "sib.h"
 
 void parse_modrm(Emulator* emu, ModRM* modrm)
 {
@@ -21,8 +22,9 @@ void parse_modrm(Emulator* emu, ModRM* modrm)
     emu->eip += 1;
 
     if (modrm->mod != ADDRESSING_MODE_REGISTER && modrm->rm == 4) {
-        modrm->sib = get_code8(emu, 0);
-        emu->eip += 1;
+        SIB sib;
+        parse_sib(emu, &sib);
+        modrm->sib = sib;
     }
 
     if ((modrm->mod == ADDRESSING_MODE_MEMORY && modrm->rm == 5) || modrm->mod == ADDRESSING_MODE_DISP32) {
@@ -36,23 +38,31 @@ void parse_modrm(Emulator* emu, ModRM* modrm)
 
 uint32_t calc_memory_address(Emulator* emu, ModRM* modrm)
 {
-    if (modrm->rm == 4) {
-        printf("not implemented ModRM mod = 0, rm = 4\n");
-        exit(0);
-    }
-
     switch  (modrm->mod) {
         case ADDRESSING_MODE_MEMORY:
-            if (modrm->rm == 5) {
+            if (modrm->rm == 4) {
+                uint32_t sib_addr = calc_sib_addr(emu, &modrm->sib);
+                return sib_addr;
+            } else if (modrm->rm == 5) {
                 return modrm->disp32;
             }
 
             return get_register32(emu, modrm->rm);
 
         case ADDRESSING_MODE_DISP8:
+            if (modrm->rm == 4) {
+                uint32_t sib_addr = calc_sib_addr(emu, &modrm->sib);
+                return sib_addr + modrm->disp8;
+            }
+
             return get_register32(emu, modrm->rm) + modrm->disp8;
 
         case ADDRESSING_MODE_DISP32:
+            if (modrm->rm == 4) {
+                uint32_t sib_addr = calc_sib_addr(emu, &modrm->sib);
+                return sib_addr + modrm->disp32;
+            }
+
             return get_register32(emu, modrm->rm) + modrm->disp32;
 
         default:
