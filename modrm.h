@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "emulator.h"
+#include "sib.h"
 
 enum AddressingMode {
     ADDRESSING_MODE_MEMORY = 0,
@@ -22,7 +23,7 @@ typedef struct {
 
     uint8_t rm;
 
-    uint8_t sib;
+    SIB sib;
 
     union {
         int8_t disp8;

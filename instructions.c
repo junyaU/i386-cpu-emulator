@@ -36,6 +36,15 @@ static void add_rm32_r32(Emulator* emu)
     set_rm32(emu, &modrm, rm32 + r32);
 }
 
+static void add_r32_rm32(Emulator* emu){
+    emu->eip++;
+    ModRM modrm;
+    parse_modrm(emu, &modrm);
+    uint32_t r32 = get_r32(emu, &modrm);
+    uint32_t rm32 = get_rm32(emu, &modrm);
+    set_r32(emu, &modrm, rm32 + r32);
+}
+
 static void mov_rm32_r32(Emulator* emu)
 {
     emu->eip++;
@@ -149,7 +158,6 @@ static void call_rel32(Emulator* emu)
 
 static void ret(Emulator* emu)
 {
-    printf("aaa\n");
     emu->eip = pop32(emu);
 }
 
@@ -178,6 +186,7 @@ void init_instructions(void)
     int i;
 
     instructions[0x01] = add_rm32_r32;
+    instructions[0x03] = add_r32_rm32;
 
     for (i = 0; i < 8; i++) {
         instructions[0x50 + i] = push_r32;

@@ -71,6 +71,8 @@ int main(int argc, char* argv[])
     while(emu->eip < MEMORY_SIZE) {
         uint8_t code = get_code8(emu, 0);
 
+        printf("code = %d\n", code);
+
         if (instructions[code] == NULL) {
             printf("\n\nNot Implemented: %x\n", code);
             break;
