@@ -90,6 +90,17 @@ static void add_rm32_imm8(Emulator* emu, ModRM* modrm)
     set_rm32(emu, modrm, rm32 + imm8);
 }
 
+static void xor_rm32_r32(Emulator* emu)
+{
+    emu->eip++;
+
+    ModRM modrm;
+    parse_modrm(emu, &modrm);
+    uint32_t rm32 = get_rm32(emu, &modrm);
+    uint32_t r32 = get_r32(emu, &modrm);
+    set_rm32(emu, &modrm, rm32 ^ r32);
+}
+
 static void cmp_rm32_imm8(Emulator* emu, ModRM* modrm)
 {
     uint32_t rm32 = get_rm32(emu, modrm);
@@ -236,6 +247,29 @@ static void jle(Emulator* emu)
     emu->eip += (diff + 2);
 }
 
+static void jl_near(Emulator* emu)
+{
+    int32_t diff = (is_sign(emu) != is_overflow(emu)) ? get_sign_code32(emu, 1) : 0;
+    printf("diff: %d\n", diff);
+    emu->eip += (diff + 5);
+}
+
+static void code_f(Emulator* emu)
+{
+    emu->eip++;
+
+    uint32_t opecode = get_code8(emu, 0);
+
+    switch (opecode) {
+        case 0x8C:
+            jl_near(emu);
+            break;
+        default:
+            printf("not implemented: F %d\n", opecode);
+            exit(1);
+    }
+}
+
 void init_instructions(void)
 {
     memset(instructions, 0, sizeof(instructions));
@@ -244,6 +278,9 @@ void init_instructions(void)
     instructions[0x01] = add_rm32_r32;
     instructions[0x03] = add_r32_rm32;
 
+    instructions[0x0F] = code_f;
+
+    instructions[0x31] = xor_rm32_r32;
     instructions[0x3B] = cmp_r32_rm32;
 
     for (i = 0; i < 8; i++) {
