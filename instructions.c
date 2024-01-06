@@ -90,6 +90,18 @@ static void add_rm32_imm8(Emulator* emu, ModRM* modrm)
     set_rm32(emu, modrm, rm32 + imm8);
 }
 
+static void sub_r32_rm32(Emulator* emu)
+{
+    emu->eip++;
+    ModRM modrm;
+    parse_modrm(emu, &modrm);
+    uint32_t r32 = get_r32(emu, &modrm);
+    uint32_t rm32 = get_rm32(emu, &modrm);
+    uint64_t result = (uint64_t)r32 - (uint64_t)rm32;
+    set_r32(emu, &modrm, result);
+    update_eflags_sub(emu, r32, rm32, result);
+}
+
 static void xor_rm32_r32(Emulator* emu)
 {
     emu->eip++;
@@ -279,6 +291,8 @@ void init_instructions(void)
     instructions[0x03] = add_r32_rm32;
 
     instructions[0x0F] = code_f;
+
+    instructions[0x2B] = sub_r32_rm32;
 
     instructions[0x31] = xor_rm32_r32;
     instructions[0x3B] = cmp_r32_rm32;
