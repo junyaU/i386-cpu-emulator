@@ -124,7 +124,7 @@ void set_sign(Emulator* emu, int is_sign)
     if (is_sign) {
         emu->eflags |= SIGN_FLAG;
     } else {
-        emu->eflags &= ~ZERO_FLAG;
+        emu->eflags &= ~SIGN_FLAG;
     }
 }
 
