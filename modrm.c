@@ -135,4 +135,3 @@ uint32_t get_r32(Emulator* emu, ModRM* modrm)
 {
     return get_register32(emu, modrm->reg_index);
 }
-

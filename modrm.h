@@ -43,4 +43,12 @@ uint32_t get_r32(Emulator* emu, ModRM* modrm);
 
 void set_r32(Emulator* emu, ModRM* modrm, uint32_t value);
 
+uint8_t get_r8(Emulator* emu, ModRM* modrm);
+
+void set_r8(Emulator* emu, ModRM* modrm, uint8_t value);
+
+void set_rm8(Emulator* emu, ModRM* modrm, uint8_t value);
+
+uint8_t get_rm8(Emulator* emu, ModRM* modrm);
+
 #endif
