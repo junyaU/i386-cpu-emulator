@@ -7,6 +7,7 @@
 #include "emulator_func.h"
 #include "modrm.h"
 #include "io.h"
+#include "bios.h"
 
 instruction_func_t *instructions[256];
 
@@ -357,6 +358,20 @@ static void code_f(Emulator* emu)
     }
 }
 
+static void swi(Emulator* emu)
+{
+    uint8_t int_index = get_code8(emu, 1);
+    emu->eip += 2;
+
+    switch (int_index) {
+        case 0x10:
+            bios_video(emu);
+            break;
+        default:
+            printf("unknown interrupt: 0x%02x\n", int_index);
+    }
+}
+
 void init_instructions(void)
 {
     memset(instructions, 0, sizeof(instructions));
@@ -406,7 +421,9 @@ void init_instructions(void)
     instructions[0x8A] = mov_r8_rm8;
     instructions[0x8B] = mov_r32_rm32;
 
-    instructions[0xB0] = mov_r8_imm8;
+    for (i = 0; i < 8; i++) {
+        instructions[0xB0 + i] = mov_r8_imm8;
+    }
 
     for (i = 0; i < 8; i++) {
         instructions[0xB8 + i] = mov_r32_imm32;
@@ -415,6 +432,8 @@ void init_instructions(void)
     instructions[0xC3] = ret;
     instructions[0xC7] = mov_rm32_imm32;
     instructions[0xC9] = leave;
+
+    instructions[0xCD] = swi;
 
     instructions[0xE8] = call_rel32;
     instructions[0xE9] = near_jump;
