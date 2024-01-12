@@ -327,13 +327,13 @@ static void jle(Emulator* emu)
     emu->eip += (diff + 2);
 }
 
-static void jl_near(Emulator* emu)
+static void near_jl(Emulator* emu)
 {
     int32_t diff = (is_sign(emu) != is_overflow(emu)) ? get_sign_code32(emu, 1) : 0;
     emu->eip += (diff + 5);
 }
 
-static void jg_near(Emulator* emu)
+static void near_jg(Emulator* emu)
 {
     int32_t diff = (!is_zero(emu) && (is_sign(emu) == is_overflow(emu))) ? get_sign_code32(emu, 1) : 0;
     emu->eip += (diff + 5);
@@ -347,10 +347,10 @@ static void code_f(Emulator* emu)
 
     switch (opecode) {
         case 0x8C:
-            jl_near(emu);
+            near_jl(emu);
             break;
         case 0x8F:
-            jg_near(emu);
+            near_jg(emu);
             break;
         default:
             printf("not implemented: F %d\n", opecode);
